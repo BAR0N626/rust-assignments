@@ -1,10 +1,31 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+/// JSON-RPC request id can be a number, string, or null
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(untagged)]
+pub enum RequestId {
+    Num(i64),
+    Str(String),
+    Null,
+}
+
+/// params can be an array, object, or absent
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(untagged)]
+pub enum Params {
+    Array(Vec<serde_json::Value>),
+    Object(serde_json::Map<String, serde_json::Value>),
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Request {
-    pub id: u32,
+    pub jsonrpc: String,
     pub method: String,
-    pub params: Vec<String>,
+
+    #[serde(default)]
+    pub params: Option<Params>,
+
+    pub id: RequestId,
 }
 
 pub fn json_to_toml(json_data: &str) -> Result<String, Box<dyn std::error::Error>> {
@@ -18,14 +39,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn converts_json_to_toml() {
+    fn parses_jsonrpc_request() {
         let json = r#"{
-            "id": 1,
-            "method": "getUser",
-            "params": ["id=42", "name=John"]
-        }"#;
+    "jsonrpc": "2.0",
+    "method": "getUser",
+    "params": {"id": 42},
+    "id": 1
+}"#;
 
-        let toml = json_to_toml(json).unwrap();
-        assert!(toml.contains("method = \"getUser\""));
+
+        let req: Request = serde_json::from_str(json).unwrap();
+        assert_eq!(req.jsonrpc, "2.0");
+        assert_eq!(req.method, "getUser");
+        assert_eq!(req.id, RequestId::Num(1));
+        assert!(req.params.is_some());
     }
 }
