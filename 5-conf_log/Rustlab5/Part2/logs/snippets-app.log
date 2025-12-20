@@ -1,0 +1,5 @@
+2025-12-18T17:17:46.864203Z  INFO Starting snippets-app
+2025-12-18T17:17:46.864361Z  INFO Reading snippet body from stdin
+2025-12-18T17:17:46.864651Z  INFO Snippet saved title=hello
+2025-12-18T17:17:53.183154Z  INFO Starting snippets-app
+2025-12-18T17:17:53.183232Z  INFO Listing snippets
